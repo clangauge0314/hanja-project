@@ -80,4 +80,48 @@
       </div>
     </div>
   </div>
+
+  <div
+    id="mobile-menu"
+    class="hidden flex flex-col items-center space-y-4 bg-[#8B4513] text-white p-3 lg:hidden"
+  >
+    <a href="/" class="text-lg hover:text-yellow-400">홈</a>
+    <a href="/" class="text-lg hover:text-yellow-400">나만의 단어장</a>
+    <a href="/" class="text-lg hover:text-yellow-400">한자 AI</a>
+    <a href="/" class="text-lg hover:text-yellow-400">문의하기</a>
+
+    <div id="mobile-login-buttons" class="flex space-x-4">
+      <a
+        href="login.html"
+        class="border-2 border-white bg-[#8B4513] text-white font-semibold px-6 py-2 rounded-lg hover:bg-white hover:text-[#8B4513] transition duration-300"
+        >로그인</a
+      >
+      <a
+        href="signup.html"
+        class="border-2 border-white bg-[#8B4513] text-white font-semibold px-6 py-2 rounded-lg hover:bg-white hover:text-[#8B4513] transition duration-300"
+        >회원가입</a
+      >
+    </div>
+
+    <div
+      id="mobile-user-profile"
+      class="hidden flex flex-col items-center space-y-2 w-full"
+    >
+      <div class="hidden text-lg font-semibold">
+        <span id="mobile-user-name"></span>
+      </div>
+      <button
+        id="mobile-delete-account-button"
+        class="block w-full text-center py-2 hover:bg-red-700 text-red-100"
+      >
+        회원탈퇴
+      </button>
+      <button
+        id="mobile-logout-button"
+        class="block w-full text-center py-2 hover:bg-[#7B3503]"
+      >
+        로그아웃
+      </button>
+    </div>
+  </div>
 </nav>
