@@ -21,7 +21,7 @@ document
     try {
       const user = await googleLogin();
       alert(`환영합니다, ${user.displayName}님!`);
-      window.location.href = "dashboard.html";
+      window.location.href = "index.html";
     } catch (error) {
       console.error(error.message);
       alert(error.message);
@@ -34,7 +34,7 @@ document
     try {
       const user = await githubLogin();
       alert(`환영합니다, ${user.displayName}님!`);
-      window.location.href = "dashboard.html";
+      window.location.href = "index.html";
     } catch (error) {
       console.error(error.message);
       alert(error.message);
@@ -56,7 +56,7 @@ submitButton.addEventListener("click", async () => {
     const user = await login(email, password);
     console.log("로그인된 사용자: ", user);
     alert(`로그인 성공! 환영합니다. ${user.displayName}님!`);
-    window.location.href = "dashboard.html";
+    window.location.href = "index.html";
   } catch (error) {
     console.error("로그인 실패: ", error.message);
     if (error.message.includes("이메일 인증")) {
