@@ -1,4 +1,4 @@
-import { auth } from "./firebase-init.js";
+import { auth, db } from "./firebase-init.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -12,8 +12,13 @@ import {
   deleteUser,
   reauthenticateWithCredential,
   reauthenticateWithPopup,
-  EmailAuthProvider
+  EmailAuthProvider,
 } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+import {
+  doc,
+  setDoc,
+  getDoc,
+} from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
 // 회원가입 함수
 export const signup = async (email, password, displayName) => {
@@ -70,6 +75,8 @@ export const googleLogin = async () => {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
 
+    await saveUserData(user);
+
     console.log("google 로그인 성공: ", user);
     return user;
   } catch (error) {
@@ -92,6 +99,8 @@ export const githubLogin = async () => {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
 
+    await saveUserData(user);
+
     console.log("Github 로그인 성공: ", user);
     return user;
   } catch (error) {
@@ -105,6 +114,24 @@ export const githubLogin = async () => {
       console.error("Github 로그인 실패: ", error);
       throw new Error("깃허브 로그인에 실패했습니다. 다시 시도해주세요");
     }
+  }
+};
+
+const saveUserData = async (user) => {
+  const userRef = doc(db, "users", user.email);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    await setDoc(userRef, {
+      wordCount: 0,
+      aiUsage: 0,
+      maxWordCount: 50,
+      maxAiUsage: 10,
+    });
+
+    console.log("사용자 데이터 생성 성공");
+  } else {
+    console.log("이미 firestore에 사용자 데이터가 존재합니다.");
   }
 };
 
@@ -123,40 +150,44 @@ export const deleteAccount = async () => {
   try {
     const user = auth.currentUser;
 
-    if(!user) {
+    if (!user) {
       alert("로그인이 필요합니다.");
       return;
     }
 
-    if(user.providerData.some((provider) => provider.providerId == "google.com")) {
+    if (
+      user.providerData.some((provider) => provider.providerId == "google.com")
+    ) {
       const provider = new GoogleAuthProvider();
       await reauthenticateWithPopup(user, provider);
       alert("Google 사용자 재인증 성공");
-    } else if(user.providerData.some((provider) => provider.providerId == "github.com")) {
+    } else if (
+      user.providerData.some((provider) => provider.providerId == "github.com")
+    ) {
       const provider = new GithubAuthProvider();
       await reauthenticateWithPopup(user, provider);
       alert("Github 사용자 재인증 성공");
     } else {
       const email = user.email;
       const password = prompt("비밀번호를 입력하세요: ");
-      if(!password) {
-        alert("비밀번호를 입력해야합니다.")
+      if (!password) {
+        alert("비밀번호를 입력해야합니다.");
         return;
       }
       const credential = EmailAuthProvider.credential(email, password);
       await reauthenticateWithCredential(user, credential);
-      alert("이메일 사용자 재인증 성공")
+      alert("이메일 사용자 재인증 성공");
     }
 
     await deleteUser(user);
     alert("계정이 성공적으로 삭제되었습니다.");
     window.location.href = "signup.html";
-  } catch(error) {
-    if(error.code === "auth/requires-recent-login") {
-      alert("최근 인증 정보가 필요합니다. 다시 로그인 후 시도해주세요.")
+  } catch (error) {
+    if (error.code === "auth/requires-recent-login") {
+      alert("최근 인증 정보가 필요합니다. 다시 로그인 후 시도해주세요.");
     } else {
       console.error("계정 삭제 실패: ", error.message);
-      alert("계정을 삭제할 수 없습니다. 다시 시도해주세요.")
+      alert("계정을 삭제할 수 없습니다. 다시 시도해주세요.");
     }
   }
-}
+};

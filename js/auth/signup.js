@@ -1,4 +1,7 @@
+import { db } from "../firebase/firebase-init.js";
 import { signup } from "../firebase/firebase-auth.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
 
 const nameInput = document.getElementById("name");
 const emailInput = document.getElementById("email");
@@ -38,6 +41,13 @@ submitButton.addEventListener("click", async () => {
     try {
         const user = await signup(email, password, name);
         alert("인증 이메일을 발송했습니다. 이메일을 확인해주세요!");
+
+        await setDoc(doc(db, "users", email), {
+            wordCount: 0,
+            aiUsage: 0,
+            maxWordCount: 50,
+            maxAiUsage: 10,
+        })
         window.location.href = "login.html";
         console.log("가입된 사용자: ", user);
     } catch(error) {
