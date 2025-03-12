@@ -1,3 +1,12 @@
+import {
+    doc,
+    getDoc,
+    collection,
+    query,
+    getDocs,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
 export function createWordCard(word) {
   return `
       <div 
@@ -40,28 +49,145 @@ export function createWordCard(word) {
     `;
 }
 
-export function initializeWordList({searchInput, filterType, loadMoreBtn, onSearch, onFilterChange, onLoadMore}) {
-    if(searchInput) {
-        searchInput.addEventListener("input", onSearch);
-    }
+export function initializeWordList({
+  searchInput,
+  filterType,
+  loadMoreBtn,
+  onSearch,
+  onFilterChange,
+  onLoadMore,
+}) {
+  if (searchInput) {
+    searchInput.addEventListener("input", onSearch);
+  }
 
-    if(filterType) {
-        filterType.addEventListener("change", onFilterChange);
-    }
+  if (filterType) {
+    filterType.addEventListener("change", onFilterChange);
+  }
 
-    if(loadMoreBtn) {
-        loadMoreBtn.addEventListener("click", onLoadMore);
-    }
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener("click", onLoadMore);
+  }
 }
 
 export function filterWords(allWords, searchInput, filterType) {
-    const searchValue = searchInput.value.toLowerCase();
-    const filterValue = filterType.value;
+  const searchValue = searchInput.value.toLowerCase();
+  const filterValue = filterType.value;
 
-    return allWords.filter((word) => {
-        const valueToSearch = word[filterValue].toString().toLowerCase() || "";
-        return valueToSearch.includes(searchValue);
+  return allWords.filter((word) => {
+    const valueToSearch = word[filterValue].toString().toLowerCase() || "";
+    return valueToSearch.includes(searchValue);
+  });
+}
+
+export function displayWordList(
+  wordList,
+  filteredWords,
+  displayCount,
+  loadMoreBtn
+) {
+  if (!wordList) return;
+
+  const wordsToShow = filteredWords.slice(0, displayCount);
+
+  if (wordsToShow.length === 0) {
+    wordList.innerHTML = `
+            <div class="col-span-full text-center py-8 text-gray-500">
+                저장된 단어가 없습니다.
+            </div>
+        `;
+    loadMoreBtn.classList.add("hidden");
+    return;
+  }
+
+  wordList.innerHTML = wordsToShow.map(createWordCard).join("");
+
+  if (filteredWords.length > displayCount) {
+    loadMoreBtn.classList.remove("hidden");
+  } else {
+    loadMoreBtn.classList.add("hidden");
+  }
+
+  return wordsToShow.length;
+}
+
+export async function initializeWordListPage({
+  currentUser,
+  db,
+  type,
+  onAddWordClick,
+  elements,
+}) {
+  if (!currentUser) return;
+
+  if (elements.addWordBtn) {
+    elements.addWordBtn.addEventListener("click", onAddWordClick);
+  }
+
+  initializeWordList({
+    ...elements,
+    onSearch: () => handleSearch(elements),
+    onFilterChange: () => handleSearch(elements),
+    onLoadMore: () => handleLoadMore(elements),
+  });
+
+  await fetchAndDisplayWords(currentUser, db, type);
+}
+
+export function handleSearch(elements) {
+  displayCount = 12;
+  filteredWords = filterWords(
+    allWords,
+    elements.searchInput,
+    elements.filterType
+  );
+  displayWordList(
+    document.getElementById("word-list"),
+    filteredWords,
+    displayCount,
+    elements.loadMoreBtn
+  );
+}
+
+export function handleLoadMore(elements) {
+  displayCount += 12;
+  displayWordList(
+    document.getElementById("word-list"),
+    filteredWords,
+    displayCount,
+    elements.loadMoreBtn
+  );
+}
+
+export async function fetchAndDisplayWords(currentUser, db, type) {
+  try {
+    if (!currentUser) return;
+
+    const collectionPath =
+      type === "ai"
+        ? ["ai-recommend", currentUser.email, "ai-recommed"]
+        : ["wordlist", currentUser.email, "wordlist"];
+    
+    const wordsRef = collection(db, ...collectionPath);
+    const q = query(wordsRef, orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    allWords = [];
+    querySnapshot.forEach((doc) => {
+        allWords.push(doc.data());
     })
+
+    document.getElementById("word-count").textContent = allWords.length;
+    filteredWords = allWords;
+    displayWordList(
+        document.getElementById("word-list"),
+        filteredWords,
+        displayCount,
+        document.getElementById("load-more"),
+    );
+  } catch (error) {
+    console.error("단어를 가져오는데 실패했습니다.", error);
+  }
 }
 
 export async function loadModals(modalPaths) {
@@ -71,3 +197,9 @@ export async function loadModals(modalPaths) {
   );
   document.getElementById("modal-container").innerHTML = htmlContents.join("");
 }
+
+let allWords = [];
+let filteredWords = [];
+let displayCount = 12;
+
+export { allWords, filteredWords, displayCount };
