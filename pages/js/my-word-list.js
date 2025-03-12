@@ -1,7 +1,7 @@
 import { loadNavbar } from "../../components/js/navbar.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
 import { auth, db } from "../../js/firebase/firebase-init.js";
-
+import { initAddHanja } from "../../components/js/add-hanja-modal.js";
 import { loadModals } from "../../utils/word-list-utils.js";
 
 let currentUser = null;
@@ -9,6 +9,7 @@ let currentUser = null;
 document.addEventListener("DOMContentLoaded", async () => {
   loadNavbar();
   await loadModals(["../components/add-hanja-modal.html"]);
+  await initAddHanja();
 
   const elements = {
     addWordBtn: document.getElementById("add-word"),
