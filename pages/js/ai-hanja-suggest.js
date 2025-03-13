@@ -9,6 +9,7 @@ import {
   loadModals,
   initializeWordListPage,
 } from "../../utils/word-list-utils.js";
+import { handleAIRecommendation } from "../../utils/ai-utils.js";
 
 let currentUser = null;
 window.showLearnHanjaModal = showLearnHanjaModal;
@@ -32,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         currentUser,
         db,
         type: "ai",
-        onAddWordClick: () => handleAiRecommendation(currentUser, db),
+        onAddWordClick: () => handleAIRecommendation(currentUser, db),
         elements,
       });
     } else {
