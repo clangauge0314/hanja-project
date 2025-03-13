@@ -1,11 +1,11 @@
 import {
-    doc,
-    getDoc,
-    collection,
-    query,
-    getDocs,
-    orderBy
-  } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+  doc,
+  getDoc,
+  collection,
+  query,
+  getDocs,
+  orderBy,
+} from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
 export function createWordCard(word) {
   return `
@@ -111,6 +111,39 @@ export function displayWordList(
   return wordsToShow.length;
 }
 
+export async function updateUsageUI(currentUser, db, type) {
+  const userRef = doc(db, "users", currentUser.email);
+  const userDoc = await getDoc(userRef);
+  const userData = userDoc.data();
+
+  const usage = type === "ai" ? userData.aiUsage || 0 : userData.wordCount || 0;
+  const maxUsage =
+    type === "ai" ? userData.maxAiUsage || 0 : userData.maxWordCount || 0;
+
+  const usageText = document.getElementById(`${type}-usage-text`);
+  const usageBar = document.getElementById(`${type}-usage-bar`);
+
+  usageText.textContent = `${usage}/${maxUsage}`;
+
+  const usagePercentage = maxUsage > 0 ? (usage / maxUsage) * 100 : 0;
+  usageBar.style.width = `${Math.min(usagePercentage, 100)}%`;
+
+  updateUsageBarColor(usageBar, usagePercentage);
+}
+
+function updateUsageBarColor(usageBar, percentage) {
+  if (percentage >= 90) {
+    usageBar.classList.remove("bg-[#8B4513]");
+    usageBar.classList.add("bg-red-500");
+  } else if (percentage >= 70) {
+    usageBar.classList.remove("bg-[#8B4513]");
+    usageBar.classList.add("bg-yellow-500");
+  } else {
+    usageBar.classList.remove("bg-red-500", "bg-yellow-500");
+    usageBar.classList.add("bg-[#8B4513]");
+  }
+}
+
 export async function initializeWordListPage({
   currentUser,
   db,
@@ -132,6 +165,7 @@ export async function initializeWordListPage({
   });
 
   await fetchAndDisplayWords(currentUser, db, type);
+  await updateUsageUI(currentUser, db, type);
 }
 
 export function handleSearch(elements) {
@@ -167,23 +201,23 @@ export async function fetchAndDisplayWords(currentUser, db, type) {
       type === "ai"
         ? ["ai-recommend", currentUser.email, "ai-recommend"]
         : ["wordlist", currentUser.email, "wordlist"];
-    
+
     const wordsRef = collection(db, ...collectionPath);
     const q = query(wordsRef, orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q);
 
     allWords = [];
     querySnapshot.forEach((doc) => {
-        allWords.push(doc.data());
-    })
+      allWords.push(doc.data());
+    });
 
     document.getElementById("word-count").textContent = allWords.length;
     filteredWords = allWords;
     displayWordList(
-        document.getElementById("word-list"),
-        filteredWords,
-        displayCount,
-        document.getElementById("load-more"),
+      document.getElementById("word-list"),
+      filteredWords,
+      displayCount,
+      document.getElementById("load-more")
     );
   } catch (error) {
     console.error("단어를 가져오는데 실패했습니다.", error);

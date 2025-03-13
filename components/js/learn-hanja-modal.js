@@ -2,6 +2,8 @@ import { auth, db } from "../../js/firebase/firebase-init.js";
 import {
   deleteDoc,
   doc,
+  updateDoc,
+  increment,
 } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
 let writer = null;
@@ -71,8 +73,19 @@ export async function initLearnHanja() {
         );
         await deleteDoc(wordlistRef);
 
-        const aiRecommendRef = doc(db, "ai-recommend", auth.currentUser.email, "ai-recommend", hanjaToDelete);
+        const aiRecommendRef = doc(
+          db,
+          "ai-recommend",
+          auth.currentUser.email,
+          "ai-recommend",
+          hanjaToDelete
+        );
         await deleteDoc(aiRecommendRef);
+
+        const userRef = doc(db, "users", auth.currentUser.email);
+        await updateDoc(userRef, {
+          wordCount: increment(-1),
+        });
 
         alert("한자가 성공적으로 삭제되었습니다.");
         modal.classList.add("hidden");
