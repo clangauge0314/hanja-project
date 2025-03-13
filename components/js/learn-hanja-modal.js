@@ -71,6 +71,9 @@ export async function initLearnHanja() {
         );
         await deleteDoc(wordlistRef);
 
+        const aiRecommendRef = doc(db, "ai-recommend", auth.currentUser.email, "ai-recommend", hanjaToDelete);
+        await deleteDoc(aiRecommendRef);
+
         alert("한자가 성공적으로 삭제되었습니다.");
         modal.classList.add("hidden");
         window.location.reload();

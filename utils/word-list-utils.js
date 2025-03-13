@@ -165,7 +165,7 @@ export async function fetchAndDisplayWords(currentUser, db, type) {
 
     const collectionPath =
       type === "ai"
-        ? ["ai-recommend", currentUser.email, "ai-recommed"]
+        ? ["ai-recommend", currentUser.email, "ai-recommend"]
         : ["wordlist", currentUser.email, "wordlist"];
     
     const wordsRef = collection(db, ...collectionPath);
