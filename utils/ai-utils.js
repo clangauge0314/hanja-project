@@ -6,7 +6,7 @@ import {
   } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
   import { fetchAndDisplayWords } from "./word-list-utils.js";
   
-  const GEMINI_API_KEY = "AIzaSyA20jVcBHKAijE3K_YLystYe89uLnOS-U0";
+  const GEMINI_API_KEY = "";
   const GEMINI_API_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
   
